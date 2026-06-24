@@ -1,0 +1,172 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ReliefLens Dashboard</title>
+  <style>
+    :root {
+      color-scheme: light;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: #f5f7f4;
+      color: #1d241f;
+    }
+    body { margin: 0; }
+    header {
+      padding: 32px clamp(18px, 4vw, 52px);
+      background: linear-gradient(135deg, #163326, #315f43);
+      color: white;
+    }
+    h1 { margin: 0 0 8px; font-size: clamp(28px, 4vw, 44px); letter-spacing: 0; }
+    header p { margin: 0; max-width: 760px; color: #dbe8df; line-height: 1.5; }
+    main { padding: 24px clamp(18px, 4vw, 48px) 48px; }
+    .summary { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px; margin-bottom: 18px; }
+    .stat { background: white; border: 1px solid #d9ded5; border-left: 6px solid #7b897e; border-radius: 8px; padding: 12px; }
+    .stat span { display: block; color: #5d665f; font-size: 12px; text-transform: uppercase; letter-spacing: 0.08em; }
+    .stat strong { font-size: 30px; }
+    .severity-critical { border-left-color: #b3261e; }
+    .severity-high { border-left-color: #c46a19; }
+    .severity-medium { border-left-color: #9b7a16; }
+    .severity-low { border-left-color: #4f7f61; }
+    .toolbar { display: grid; grid-template-columns: minmax(180px, 1fr) auto; gap: 12px; align-items: start; }
+    input { width: 100%; box-sizing: border-box; border: 1px solid #bfc8bd; border-radius: 8px; padding: 12px 14px; font: inherit; background: white; }
+    .filters { display: flex; gap: 8px; flex-wrap: wrap; justify-content: flex-end; }
+    button { border: 1px solid #bfc8bd; background: white; border-radius: 999px; padding: 9px 12px; font: inherit; cursor: pointer; }
+    button.active { background: #214432; color: white; border-color: #214432; }
+    button span { opacity: 0.75; }
+    section { margin-top: 28px; }
+    h2 { font-size: 20px; margin: 0 0 12px; display: flex; gap: 10px; align-items: center; }
+    h2 span { font-size: 13px; padding: 2px 8px; border-radius: 999px; background: #dfe8da; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 14px; }
+    .card {
+      background: white;
+      border: 1px solid #d9ded5;
+      border-left-width: 6px;
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: 0 1px 2px rgba(20, 30, 20, 0.06);
+    }
+    img { width: 100%; aspect-ratio: 4 / 3; object-fit: cover; background: #e5e8e1; display: block; }
+    .body { padding: 12px; }
+    .meta { font-weight: 700; margin-bottom: 6px; display: flex; justify-content: space-between; gap: 8px; }
+    .badge { display: inline-block; font-size: 12px; padding: 3px 8px; border-radius: 999px; background: #edf2eb; margin-bottom: 8px; }
+    .path { color: #5d665f; font-size: 12px; overflow-wrap: anywhere; margin-bottom: 8px; }
+    p { margin: 0; line-height: 1.4; }
+    ol { margin: 12px 0 0; padding: 0; list-style: none; display: grid; gap: 4px; }
+    li { display: flex; justify-content: space-between; gap: 8px; font-size: 12px; color: #48524a; }
+    .hidden { display: none; }
+    @media (max-width: 720px) { .toolbar { grid-template-columns: 1fr; } .filters { justify-content: flex-start; } }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>ReliefLens Dashboard</h1>
+    <p>Local zero-shot image triage for routing urgent needs, hazards, damage, supplies, and casework follow-up.</p>
+  </header>
+  <main>
+    <div class="summary">
+      <div class="stat"><span>Total images</span><strong>3</strong></div>
+      
+        <div class="stat severity-high">
+          <span>High</span>
+          <strong>2</strong>
+        </div>
+        
+        <div class="stat severity-medium">
+          <span>Medium</span>
+          <strong>1</strong>
+        </div>
+        
+    </div>
+    <div class="toolbar">
+      <input id="search" type="search" placeholder="Search paths, actions, and labels">
+      <div class="filters">
+        <button type="button" class="active" data-category="all">All <span>3</span></button>
+        <button type="button" data-category="Blocked transportation">Blocked transportation <span>1</span></button><button type="button" data-category="Flood or water damage">Flood or water damage <span>1</span></button><button type="button" data-category="Food, water, or supplies">Food, water, or supplies <span>1</span></button>
+      </div>
+    </div>
+    
+            <section>
+              <h2>Blocked transportation <span>1</span></h2>
+              <div class="grid">
+                <article class="card severity-high" data-category="Blocked transportation" data-severity="high" data-search="..\relieflens-demo\demo_images\blocked_road.jpg blocked transportation send to logistics or public works for route verification.">
+                  <img src="file:///C:/Users/arjun/Documents/Codex/2026-06-24/https-huggingface-co-apple/outputs/relieflens-demo/demo_images/blocked_road.jpg" alt="">
+                  <div class="body">
+                    <div class="meta">
+                      <span>Blocked transportation</span>
+                      <b>1.000</b>
+                    </div>
+                    <div class="badge">High</div>
+                    <div class="path">..\relieflens-demo\demo_images\blocked_road.jpg</div>
+                    <p>Send to logistics or public works for route verification.</p>
+                    <ol><li><span>Blocked transportation</span><b>1.000</b></li><li><span>Routine or unclear scene</span><b>0.000</b></li><li><span>Animal or livestock need</span><b>0.000</b></li></ol>
+                  </div>
+                </article>
+                </div>
+            </section>
+            
+            <section>
+              <h2>Flood or water damage <span>1</span></h2>
+              <div class="grid">
+                <article class="card severity-high" data-category="Flood or water damage" data-severity="high" data-search="..\relieflens-demo\demo_images\flooded_room.jpg flood or water damage send to cleanup, mold prevention, or housing recovery queue.">
+                  <img src="file:///C:/Users/arjun/Documents/Codex/2026-06-24/https-huggingface-co-apple/outputs/relieflens-demo/demo_images/flooded_room.jpg" alt="">
+                  <div class="body">
+                    <div class="meta">
+                      <span>Flood or water damage</span>
+                      <b>1.000</b>
+                    </div>
+                    <div class="badge">High</div>
+                    <div class="path">..\relieflens-demo\demo_images\flooded_room.jpg</div>
+                    <p>Send to cleanup, mold prevention, or housing recovery queue.</p>
+                    <ol><li><span>Flood or water damage</span><b>1.000</b></li><li><span>Routine or unclear scene</span><b>0.000</b></li><li><span>Animal or livestock need</span><b>0.000</b></li></ol>
+                  </div>
+                </article>
+                </div>
+            </section>
+            
+            <section>
+              <h2>Food, water, or supplies <span>1</span></h2>
+              <div class="grid">
+                <article class="card severity-medium" data-category="Food, water, or supplies" data-severity="medium" data-search="..\relieflens-demo\demo_images\supply_table.jpg food, water, or supplies route to donations, pantry, water, or distribution inventory.">
+                  <img src="file:///C:/Users/arjun/Documents/Codex/2026-06-24/https-huggingface-co-apple/outputs/relieflens-demo/demo_images/supply_table.jpg" alt="">
+                  <div class="body">
+                    <div class="meta">
+                      <span>Food, water, or supplies</span>
+                      <b>1.000</b>
+                    </div>
+                    <div class="badge">Medium</div>
+                    <div class="path">..\relieflens-demo\demo_images\supply_table.jpg</div>
+                    <p>Route to donations, pantry, water, or distribution inventory.</p>
+                    <ol><li><span>Food, water, or supplies</span><b>1.000</b></li><li><span>Routine or unclear scene</span><b>0.000</b></li><li><span>Animal or livestock need</span><b>0.000</b></li></ol>
+                  </div>
+                </article>
+                </div>
+            </section>
+            
+  </main>
+  <script>
+    const cards = [...document.querySelectorAll('.card')];
+    const buttons = [...document.querySelectorAll('button[data-category]')];
+    const search = document.querySelector('#search');
+    let category = 'all';
+
+    function update() {
+      const term = search.value.trim().toLowerCase();
+      for (const card of cards) {
+        const matchesCategory = category === 'all' || card.dataset.category === category;
+        const matchesSearch = !term || card.dataset.search.includes(term);
+        card.classList.toggle('hidden', !(matchesCategory && matchesSearch));
+      }
+    }
+
+    for (const button of buttons) {
+      button.addEventListener('click', () => {
+        category = button.dataset.category;
+        buttons.forEach(item => item.classList.toggle('active', item === button));
+        update();
+      });
+    }
+    search.addEventListener('input', update);
+  </script>
+</body>
+</html>
