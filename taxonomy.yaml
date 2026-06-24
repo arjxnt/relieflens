@@ -1,0 +1,81 @@
+categories:
+  - id: active_danger
+    label: Active danger
+    severity: critical
+    action: "Escalate for immediate human review."
+    prompts:
+      - "a dangerous emergency scene with visible immediate risk"
+      - "a downed power line, fire, smoke, collapse, or unsafe structure"
+      - "a person near an immediate hazard"
+
+  - id: medical_or_accessibility_need
+    label: Medical or accessibility need
+    severity: high
+    action: "Route to medical, disability, or wellness-check volunteers."
+    prompts:
+      - "medical supplies, medication, oxygen, mobility aids, or injury care"
+      - "a wheelchair, walker, cane, ramp, hospital bed, or accessibility barrier"
+      - "a person needing health support or accessible transportation"
+
+  - id: flood_or_water_damage
+    label: Flood or water damage
+    severity: high
+    action: "Send to cleanup, mold prevention, or housing recovery queue."
+    prompts:
+      - "standing flood water inside a home or building"
+      - "water damaged walls, floors, furniture, boxes, or belongings"
+      - "mud, soaked materials, mold risk, or storm water damage"
+
+  - id: blocked_transport
+    label: Blocked transportation
+    severity: high
+    action: "Send to logistics or public works for route verification."
+    prompts:
+      - "a blocked road, bridge, driveway, sidewalk, or entrance"
+      - "fallen trees, debris, snow, mud, or vehicles blocking passage"
+      - "damaged street, washed out road, or inaccessible route"
+
+  - id: shelter_damage
+    label: Shelter damage
+    severity: high
+    action: "Route to housing repair, inspection, or temporary shelter support."
+    prompts:
+      - "a damaged roof, wall, window, door, ceiling, or foundation"
+      - "a home or apartment with storm, fire, or structural damage"
+      - "an unsafe room, exposed insulation, broken glass, or damaged shelter"
+
+  - id: food_water_supplies
+    label: Food, water, or supplies
+    severity: medium
+    action: "Route to donations, pantry, water, or distribution inventory."
+    prompts:
+      - "bottled water, food boxes, diapers, hygiene supplies, blankets, or kits"
+      - "donated supplies stacked for distribution"
+      - "empty shelves or a shortage of food, water, or household essentials"
+
+  - id: documentation_or_forms
+    label: Documents or forms
+    severity: medium
+    action: "Route to casework, benefits, insurance, or document replacement."
+    prompts:
+      - "paper forms, IDs, insurance documents, receipts, letters, or records"
+      - "damaged documents, wet paperwork, or official forms"
+      - "a clipboard, application, intake form, or signed document"
+
+  - id: animal_or_livestock_need
+    label: Animal or livestock need
+    severity: medium
+    action: "Route to animal care, evacuation, feed, or shelter partners."
+    prompts:
+      - "pets, livestock, animal shelter, pet food, crates, or veterinary needs"
+      - "an animal affected by storm, fire, flood, or evacuation"
+      - "farm animals needing feed, water, transport, or shelter"
+
+  - id: routine_scene
+    label: Routine or unclear scene
+    severity: low
+    action: "Keep for low-priority review or request more context."
+    prompts:
+      - "an ordinary scene without visible damage or urgent need"
+      - "a blurry, unclear, or low information photo"
+      - "a normal room, street, object, or landscape"

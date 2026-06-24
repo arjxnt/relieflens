@@ -1,0 +1,24 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "relieflens"
+version = "0.1.0"
+description = "Local-first image triage for disaster response, housing recovery, and field operations."
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+  "Pillow>=10.0",
+  "numpy>=1.24",
+  "PyYAML>=6.0",
+  "huggingface_hub>=0.24",
+  "torch>=2.2",
+  "open_clip_torch>=2.24",
+]
+
+[project.scripts]
+relieflens = "relieflens:main"
+
+[tool.setuptools]
+py-modules = ["relieflens"]
