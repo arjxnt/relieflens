@@ -16,6 +16,15 @@ dependencies = [
   "torch>=2.2",
   "open_clip_torch>=2.24",
 ]
+keywords = [
+  "apple",
+  "mobileclip",
+  "mobileclip2",
+  "computer-vision",
+  "disaster-response",
+  "local-first",
+  "zero-shot-classification",
+]
 
 [project.scripts]
 relieflens = "relieflens:main"

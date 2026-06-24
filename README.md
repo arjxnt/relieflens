@@ -1,7 +1,7 @@
 # ReliefLens
 
-ReliefLens is a local-first image triage prototype built around Apple's low-cost
-`MobileCLIP2-S0` model. It turns a folder of field photos into a ranked CSV,
+ReliefLens is a local-first image triage prototype built around
+[`apple/MobileCLIP2-S0`](https://huggingface.co/apple/MobileCLIP2-S0). It turns a folder of field photos into a ranked CSV,
 JSONL, and HTML dashboard showing likely needs, hazards, damage, supplies, and
 follow-up actions.
 
@@ -15,6 +15,13 @@ searchable and actionable without sending them to a hosted vision API.
 `apple/MobileCLIP2-S0` is small, current, and underused. Apple lists it as
 `11.4M` image parameters plus `63.4M` text parameters, which makes it a good fit
 for high-volume local transformation work.
+
+This project is intentionally Apple-model-first:
+
+- Default model: `apple/MobileCLIP2-S0`
+- Official implementation: [`apple/ml-mobileclip`](https://github.com/apple/ml-mobileclip)
+- Upstream contribution: [`apple/ml-mobileclip#11`](https://github.com/apple/ml-mobileclip/pull/11)
+- Apple-specific notes: [`APPLE_MOBILECLIP.md`](./APPLE_MOBILECLIP.md)
 
 ## What it produces
 
@@ -90,3 +97,9 @@ an attention-routing layer. Human review should decide actual priority,
 especially for medical, legal, housing, insurance, or emergency response use.
 
 See `IMPACT.md` for deployment ideas and the roadmap.
+
+## Citation
+
+ReliefLens depends on Apple's MobileCLIP work. If this project is useful, cite
+the MobileCLIP2 and MobileCLIP papers listed in Apple's
+[`ml-mobileclip` README](https://github.com/apple/ml-mobileclip#citation).
