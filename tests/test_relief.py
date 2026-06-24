@@ -21,6 +21,13 @@ class ReliefLensTests(unittest.TestCase):
         self.assertEqual(categories[0].severity, "critical")
         self.assertTrue(categories[0].prompts)
 
+    def test_simple_taxonomy_parser_handles_project_taxonomy(self) -> None:
+        text = (Path(__file__).resolve().parents[1] / "taxonomy.yaml").read_text(encoding="utf-8")
+        data = relieflens.parse_simple_taxonomy(text)
+        self.assertEqual(data["categories"][0]["id"], "active_danger")
+        self.assertEqual(data["categories"][0]["severity"], "critical")
+        self.assertTrue(data["categories"][0]["prompts"])
+
     def test_score_images_returns_ranked_matches(self) -> None:
         categories = [
             relieflens.Category("danger", "Danger", "critical", "review", ["danger"]),
@@ -36,6 +43,31 @@ class ReliefLensTests(unittest.TestCase):
         self.assertEqual(results[0].top_id, "danger")
         self.assertEqual(results[0].severity, "critical")
         self.assertEqual(results[0].top_matches[0]["label"], "Danger")
+
+    def test_score_images_rejects_mismatched_dimensions(self) -> None:
+        categories = [relieflens.Category("danger", "Danger", "critical", "review", ["danger"])]
+        with self.assertRaises(ValueError):
+            relieflens.score_images(
+                [Path("a.jpg")],
+                np.array([[1.0, 0.0]], dtype=np.float32),
+                ["danger"],
+                np.array([[1.0]], dtype=np.float32),
+                categories,
+            )
+
+    def test_mobileclip2_s0_uses_apple_documented_preprocess_kwargs(self) -> None:
+        self.assertEqual(
+            relieflens.MobileClipScorer._model_kwargs("MobileCLIP2-S0"),
+            {"image_mean": (0, 0, 0), "image_std": (1, 1, 1)},
+        )
+
+    def test_image_source_prefers_relative_paths(self) -> None:
+        with TemporaryDirectory() as tmp:
+            out = Path(tmp)
+            image = out / "demo_images" / "sample.jpg"
+            image.parent.mkdir()
+            image.write_bytes(b"fake")
+            self.assertEqual(relieflens.image_source(image, out), "demo_images/sample.jpg")
 
     def test_demo_writes_review_artifacts(self) -> None:
         with TemporaryDirectory() as tmp:

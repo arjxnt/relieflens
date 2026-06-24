@@ -4,6 +4,7 @@ import argparse
 import csv
 import html
 import json
+import re
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Iterable
@@ -45,11 +46,18 @@ class ImageResult:
 def load_taxonomy(path: Path) -> list[Category]:
     text = path.read_text(encoding="utf-8")
     data = yaml.safe_load(text) if yaml is not None else parse_simple_taxonomy(text)
+    if not isinstance(data, dict):
+        raise ValueError(f"Invalid taxonomy in {path}")
     categories = []
+    seen_ids: set[str] = set()
     for raw in data.get("categories", []):
+        category_id = str(raw["id"])
+        if category_id in seen_ids:
+            raise ValueError(f"Duplicate category id {category_id!r} in {path}")
+        seen_ids.add(category_id)
         categories.append(
             Category(
-                id=str(raw["id"]),
+                id=category_id,
                 label=str(raw["label"]),
                 severity=str(raw.get("severity", "medium")),
                 action=str(raw.get("action", "")),
@@ -142,6 +150,7 @@ class MobileClipScorer:
         model, _, preprocess = open_clip.create_model_and_transforms(
             model_name,
             pretrained=str(checkpoint),
+            **self._model_kwargs(model_name),
         )
         model.eval()
 
@@ -157,6 +166,12 @@ class MobileClipScorer:
         self.model = model.to(self.device)
         self.preprocess = preprocess
         self.tokenizer = open_clip.get_tokenizer(model_name)
+
+    @staticmethod
+    def _model_kwargs(model_name: str) -> dict[str, tuple[int, int, int]]:
+        if model_name in {"MobileCLIP2-S3", "MobileCLIP2-S4"} or model_name.endswith("L-14"):
+            return {}
+        return {"image_mean": (0, 0, 0), "image_std": (1, 1, 1)}
 
     def _resolve_device(self, requested: str) -> str:
         if requested != "auto":
@@ -200,13 +215,15 @@ class MobileClipScorer:
 
     def encode_images(self, paths: list[Path], batch_size: int = 16) -> np.ndarray:
         vectors = []
+        if batch_size < 1:
+            raise ValueError("batch_size must be at least 1")
         with self.torch.no_grad():
             for start in range(0, len(paths), batch_size):
                 batch_paths = paths[start : start + batch_size]
                 images = []
                 for path in batch_paths:
-                    image = Image.open(path).convert("RGB")
-                    images.append(self.preprocess(image))
+                    with Image.open(path) as image:
+                        images.append(self.preprocess(image.convert("RGB")))
                 tensor = self.torch.stack(images).to(self.device)
                 features = self.model.encode_image(tensor)
                 features = features / features.norm(dim=-1, keepdim=True)
@@ -242,6 +259,15 @@ def score_images(
     category_vectors: np.ndarray,
     categories: list[Category],
 ) -> list[ImageResult]:
+    if len(paths) != len(image_vectors):
+        raise ValueError("paths and image_vectors must have the same length")
+    if len(category_ids) != len(category_vectors):
+        raise ValueError("category_ids and category_vectors must have the same length")
+    if image_vectors.ndim != 2 or category_vectors.ndim != 2:
+        raise ValueError("image_vectors and category_vectors must be 2D arrays")
+    if image_vectors.shape[1] != category_vectors.shape[1]:
+        raise ValueError("image and category vectors must have the same embedding dimension")
+
     category_by_id = {category.id: category for category in categories}
     ordered_categories = [category_by_id[category_id] for category_id in category_ids]
     similarity = normalize(image_vectors) @ normalize(category_vectors).T
@@ -282,8 +308,9 @@ def score_images(
 
 
 def write_csv(results: list[ImageResult], categories: list[Category], out_path: Path) -> None:
+    score_fields = unique_score_fields([category.id for category in categories])
     fieldnames = ["image", "top_id", "top_label", "severity", "confidence", "action", "top_matches"]
-    fieldnames.extend(f"score_{category.id}" for category in categories)
+    fieldnames.extend(score_fields.values())
     with out_path.open("w", newline="", encoding="utf-8") as handle:
         writer = csv.DictWriter(handle, fieldnames=fieldnames)
         writer.writeheader()
@@ -298,7 +325,7 @@ def write_csv(results: list[ImageResult], categories: list[Category], out_path: 
                 "top_matches": json.dumps(result.top_matches, ensure_ascii=True),
             }
             for category in categories:
-                row[f"score_{category.id}"] = result.scores[category.id]
+                row[score_fields[category.id]] = result.scores[category.id]
             writer.writerow(row)
 
 
@@ -505,9 +532,26 @@ def write_html(results: list[ImageResult], out_path: Path) -> None:
 def image_source(path: Path, out_dir: Path) -> str:
     resolved = path.resolve()
     try:
-        return resolved.relative_to(out_dir).as_posix()
+        return html.escape(resolved.relative_to(out_dir).as_posix(), quote=True)
     except ValueError:
-        return resolved.as_uri()
+        return html.escape(resolved.as_uri(), quote=True)
+
+
+def unique_score_fields(ids: list[str]) -> dict[str, str]:
+    fields: dict[str, str] = {}
+    used: set[str] = set()
+    for category_id in ids:
+        base = "score_" + re.sub(r"[^a-zA-Z0-9_]+", "_", category_id).strip("_")
+        if base == "score_":
+            base = "score_category"
+        field = base
+        suffix = 2
+        while field in used:
+            field = f"{base}_{suffix}"
+            suffix += 1
+        fields[category_id] = field
+        used.add(field)
+    return fields
 
 
 def run_scan(args: argparse.Namespace) -> None:
@@ -594,12 +638,19 @@ def build_parser() -> argparse.ArgumentParser:
     scan.add_argument("--model", default="apple/MobileCLIP2-S0")
     scan.add_argument("--checkpoint")
     scan.add_argument("--device", default="auto", choices=["auto", "cpu", "cuda", "mps"])
-    scan.add_argument("--batch-size", type=int, default=16)
+    scan.add_argument("--batch-size", type=positive_int, default=16)
     scan.set_defaults(func=run_scan)
 
     demo = subparsers.add_parser("demo", parents=[common])
     demo.set_defaults(func=run_demo)
     return parser
+
+
+def positive_int(value: str) -> int:
+    parsed = int(value)
+    if parsed < 1:
+        raise argparse.ArgumentTypeError("must be at least 1")
+    return parsed
 
 
 def main() -> None:
