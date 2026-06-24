@@ -324,6 +324,7 @@ def write_jsonl(results: list[ImageResult], out_path: Path) -> None:
 
 
 def write_html(results: list[ImageResult], out_path: Path) -> None:
+    out_dir = out_path.parent.resolve()
     severity_rank = {"critical": 0, "high": 1, "medium": 2, "low": 3}
     grouped: dict[str, list[ImageResult]] = {}
     ordered_results = sorted(
@@ -359,7 +360,7 @@ def write_html(results: list[ImageResult], out_path: Path) -> None:
     for label, items in grouped.items():
         cards = []
         for item in items:
-            image_src = item.path.resolve().as_uri()
+            image_src = image_source(item.path, out_dir)
             matches = "".join(
                 f"<li><span>{html.escape(str(match['label']))}</span><b>{float(match['score']):.3f}</b></li>"
                 for match in item.top_matches
@@ -499,6 +500,14 @@ def write_html(results: list[ImageResult], out_path: Path) -> None:
 """,
         encoding="utf-8",
     )
+
+
+def image_source(path: Path, out_dir: Path) -> str:
+    resolved = path.resolve()
+    try:
+        return resolved.relative_to(out_dir).as_posix()
+    except ValueError:
+        return resolved.as_uri()
 
 
 def run_scan(args: argparse.Namespace) -> None:
